@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* table, tr, th, td {
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+}
+td, tr {
+  height: 30px;
+  overflow: hidden;  
+} */
+/*
+th {
+    padding: 4px 8px;
+}
+tr {
+    display: table;
+    table-layout: fixed;
+} */
+* {
+  color: #000;
+}
+.table-wrp {
+  height: 30vh;
+  overflow-y: auto;
+  display: block;
+}
+thead {
+  position: sticky;
+  top: 0;
+}
+td,
+th {
+  border-right: 1px solid #ccc;
+}
+th {
+  height: 50px;
+}
+td {
+  min-width: 200px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* ------------------------------- */
+/* table {
+    width: 100%;
+
+    border-spacing: 0;
+    border: 1px solid black;
+}
+td {
+    border-bottom: 1px solid black;
+}
+table tbody,
+table thead {
+    display: block;
+}
+
+thead tr th {
+    height: 40px;
+    line-height: 40px;
+}
+
+table tbody {
+
+    height: 300px;
+
+    overflow-y: auto;
+
+    overflow-x: hidden;
+}
+
+tbody {
+    border-top: 1px solid black;
+}
+
+tbody td,
+thead th {
+    width: 354px;
+    border-right: 1px solid black;
+    overflow-y: auto;
+    overflow: hidden;
+}
+
+td {
+    width: 354px;
+    text-align: center;
+} */
