@@ -11,7 +11,7 @@ async function scrapeAll(browserInstance, id, workerId) {
     console.log("id: " + id);
     console.log("worker: " + workerId);
     browser = await browserInstance;
-
+    console.log('browser: '+ (browser));
     //---------------
     await channel.sendToQueue(
       nameQueue,
@@ -34,7 +34,7 @@ async function scrapeAll(browserInstance, id, workerId) {
     let returnTimer = setInterval(async () => {
       await channel.sendToQueue(
         nameQueue,
-        Buffer.from(
+        Buffer.from( 
           JSON.stringify({
             id: id,
             workerId: workerId,

@@ -38,8 +38,9 @@ const receiveMsg = async (nameQueue, io) => {
           let imageRV = worker.imageReview;
           imageRV.shift();
           imageRV.push(data);
-          worker.imageReview = imageRV;
-          await worker.save();
+          // worker.imageReview = imageRV;
+          // await worker.update();
+          await Worker.findByIdAndUpdate(workerId, {imageReview: imageRV});
         } else {
           throw new Error("Couldn't find worker id");
         }
