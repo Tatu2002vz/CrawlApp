@@ -5,7 +5,7 @@ import formatTime from "../utils/formatTime";
 const ManageBot = () => {
   const [list, setList] = useState(null);
   useEffect(() => {
-    fetch("http://localhost:8888/worker/getAll", {
+    fetch(process.env.REACT_APP_URL_SERVER + "/worker/getAll", {
       method: "get",
     })
       .then((rs) => {

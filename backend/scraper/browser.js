@@ -8,6 +8,7 @@ async function startBrowser(){
             headless: 'shell',
             args: ["--disable-setuid-sandbox", "--no-sandbox"],
             'ignoreHTTPSErrors': true,
+            executablePath: '/usr/bin/chromium-browser'
         });
         
     } catch (err) {

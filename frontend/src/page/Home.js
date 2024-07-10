@@ -73,7 +73,7 @@ const Home = () => {
     }
   }, [data]);
   const handleCrawl = () => {
-    fetch("http://localhost:8888/worker", {
+    fetch(process.env.REACT_APP_URL_SERVER + "/worker", {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: id }),

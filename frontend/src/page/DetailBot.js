@@ -6,7 +6,7 @@ const DetailBot = () => {
   const {id} = useParams()
   const [list, setList] = useState(null)
   useEffect(() => {
-    fetch("http://localhost:8888/worker/detail/" + id, {
+    fetch(process.env.REACT_APP_URL_SERVER+ "/worker/detail/" + id, {
       method: "get",
     }).then((rs) => {
       return rs.json();

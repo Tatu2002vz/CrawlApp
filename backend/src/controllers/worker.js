@@ -3,7 +3,7 @@ const Textlog = require("../models/textlog");
 var amqp = require("amqplib");
 
 const activeBot = async (req, res) => {
-  const connMQ = await amqp.connect("amqp://localhost");
+  const connMQ = await amqp.connect("amqp://admin:admin@103.252.72.243:5672");
   const { id } = req.body;
   try {
     const channel = await connMQ.createChannel();
