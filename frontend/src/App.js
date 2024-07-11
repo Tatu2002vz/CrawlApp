@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import listRoute from "./routes";
 function App() {
   
@@ -6,6 +8,7 @@ function App() {
     
     <BrowserRouter>
     <div className="">
+    <ToastContainer />
       <Routes>
         {listRoute.map((item, index) => {
           const Page = item.component;

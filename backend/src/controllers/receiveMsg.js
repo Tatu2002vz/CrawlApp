@@ -9,6 +9,9 @@ const receiveMsg = async (nameQueue, io) => {
   await channel.consume(
     nameQueue,
     async (msg) => {
+      // delete (JSON.parse(msg.content.toString())).data
+  
+      // console.log(JSON.parse(msg.content.toString()))
       const { type, data, id, workerId } = JSON.parse(msg.content.toString());
       if (type === `textlog`) {
         io.to(id).emit(type, data);
@@ -28,6 +31,7 @@ const receiveMsg = async (nameQueue, io) => {
           price: Number(Number(data.price.replace("đ", "").replace(".", ""))),
           description: data.description,
           link: data.link,
+          workerId: workerId,
         });
         await Worker.findByIdAndUpdate(workerId, { $inc: { sucess: 1 } });
       }
@@ -54,6 +58,9 @@ const receiveMsg = async (nameQueue, io) => {
       }
       if(type ==='active') {
         await Worker.findByIdAndUpdate(workerId, {active: data});
+      }
+      if(type === 'browser') {
+        await Worker.findByIdAndUpdate(workerId, {browser: data})
       }
     },
     {

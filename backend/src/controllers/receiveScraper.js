@@ -1,7 +1,8 @@
 var amqp = require("amqplib");
 const scrape = require("../../scraper/index");
 const { getChannel, connect } = require("../../config/rabbitmq");
-
+const {stopCrawl} = require('../../scraper/pageController')
+let browsers = [];
 const receiveScraper = async () => {
   //   const connMQ = await amqp.connect("amqp://localhost");
   await connect();
@@ -10,14 +11,16 @@ const receiveScraper = async () => {
   await channel.assertQueue(nameQueue, {
     durable: false, // khi restart thì sẽ mất / không mất msg
   });
-  await channel.prefetch(1);
   console.log("Đang lắng nghe...");
   await channel.consume(
     nameQueue,
     async (msg) => {
-      const {id, workerId} = JSON.parse(msg.content.toString())
-      console.log(id, workerId)
-      await scrape({id, workerId});
+      const { id, workerId, type, browser } = JSON.parse(msg.content.toString());
+      if(type === 'stop') {
+        console.log('stop crawl')
+        await stopCrawl(browser);
+      } else 
+      await scrape({ id, workerId });
     },
     {
       noAck: true,
@@ -25,3 +28,4 @@ const receiveScraper = async () => {
   );
 };
 receiveScraper();
+module.exports = browsers;

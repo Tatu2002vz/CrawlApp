@@ -2,17 +2,44 @@
 const pageScraper = require("./pageScraper");
 var amqp = require("amqplib");
 const { getChannel } = require("../config/rabbitmq");
+const browsers = require("../src/controllers/receiveScraper");
+
+const { v4: uuidv4 } = require("uuid");
+let browser;
 async function scrapeAll(browserInstance, id, workerId) {
-  let browser;
   const url = "https://chiaki.vn/";
   try {
-    const channel = getChannel();
+    const channel = await getChannel();
     const nameQueue = "message";
     console.log("id: " + id);
     console.log("worker: " + workerId);
     browser = await browserInstance;
-    console.log('browser: '+ (browser));
-    //---------------
+
+    await channel.sendToQueue(
+      nameQueue,
+      Buffer.from(
+        JSON.stringify({
+          id: id,
+          workerId: workerId,
+          type: "BBCXS",
+          data: `Chụp ảnh màn hình trang ${url}`,
+        })
+      )
+    );
+
+    const browserId = uuidv4();
+    Array.from(browsers).push({ id: browserId, browser: browser });
+    await channel.sendToQueue(
+      nameQueue,
+      Buffer.from(
+        JSON.stringify({
+          id: id,
+          workerId: workerId,
+          type: "browser",
+          data: browserId,
+        })
+      )
+    );
     await channel.sendToQueue(
       nameQueue,
       Buffer.from(
@@ -27,14 +54,14 @@ async function scrapeAll(browserInstance, id, workerId) {
     let count = 0;
     let countTimer = setInterval(() => {
       count++;
-      if (count >= 300) {
+      if (count >= 60) {
         clearInterval(countTimer);
       }
     }, 1000);
     let returnTimer = setInterval(async () => {
       await channel.sendToQueue(
         nameQueue,
-        Buffer.from( 
+        Buffer.from(
           JSON.stringify({
             id: id,
             workerId: workerId,
@@ -43,10 +70,10 @@ async function scrapeAll(browserInstance, id, workerId) {
           })
         )
       );
-      if (count >= 300) {
+      if (count >= 60) {
         clearInterval(returnTimer);
       }
-    }, 30000);
+    }, 5000);
     setTimeout(async () => {
       await channel.sendToQueue(
         nameQueue,
@@ -60,7 +87,7 @@ async function scrapeAll(browserInstance, id, workerId) {
         )
       );
       await browser.close();
-    }, 300000);
+    }, 60000);
     // -----------
     const categories = await pageScraper.scrapCategory(
       browser,
@@ -186,6 +213,16 @@ async function scrapeAll(browserInstance, id, workerId) {
     console.log("Có lỗi xảy ra ở page controller: ", err);
   }
 }
-
-module.exports = (browserInstance, id, workerId) =>
-  scrapeAll(browserInstance, id, workerId);
+async function stopCrawl(id) {
+  // if (browsers.) {
+  //   browser.close();
+  // }
+  
+  console.log('browsers: ' + Array.from(browsers))
+  const closeCrawler = Array.from(browsers).find((item) => item.id === id);
+  closeCrawler?.close();
+}
+module.exports = {
+  scrapeAll,
+  stopCrawl,
+};

@@ -1,6 +1,6 @@
 const { Server } = require("socket.io");
 var amqp = require("amqplib");
-const {instrument} = require('@socket.io/admin-ui')
+const { instrument } = require("@socket.io/admin-ui");
 
 const { receiveMsg } = require("../controllers/receiveMsg");
 const { getChannel, connect } = require("../../config/rabbitmq");
@@ -14,18 +14,20 @@ const socketModule = async (server) => {
     },
   });
   instrument(io, {
-    auth: false
+    auth: false,
   });
+
   await connect();
+  const channel = getChannel();
+  const nameQueue = "message";
+  await channel.assertQueue(nameQueue, {
+    durable: false, // khi restart thì sẽ mất / không mất msg
+  });
+  
   io.on("connection", async (socket) => {
     data.id = socket.id;
     console.log(socket.id);
     console.log(io.sockets.sockets.size);
-    const channel = getChannel();
-    const nameQueue = "message";
-    await channel.assertQueue(nameQueue, {
-      durable: false, // khi restart thì sẽ mất / không mất msg
-    });
 
     socket.on("active", async () => {
       try {

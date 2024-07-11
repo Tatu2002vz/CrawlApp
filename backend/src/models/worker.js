@@ -25,6 +25,13 @@ const workerSchema = new mongoose.Schema(
         "",
       ],
     },
+    socketId: {
+      type: String,
+      unique: true,
+    },
+    browser: {
+      type: String,
+    }
   },
   {
     timestamps: true,

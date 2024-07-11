@@ -5,7 +5,6 @@ const workerRoute = require('./worker')
 const initRoutes = (app) => {
 
   app.use('/worker', workerRoute)
-  app.post('/product', productCtrl.addProductAPI)
   app.use(notFound);
   app.use(errHandle);
 };

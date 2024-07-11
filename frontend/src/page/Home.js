@@ -3,13 +3,13 @@ import { useEffect, useMemo, useState } from "react";
 import parse from "html-react-parser";
 import { NavLink } from "react-router-dom";
 import formatTime from "../utils/formatTime";
+import { toast } from "react-toastify";
 const Home = () => {
   const [product, setProduct] = useState([]);
   const [textlog, setTextlog] = useState([]);
   const [image, setImage] = useState();
   const [success, setSuccess] = useState(0);
   const [error, setError] = useState(0);
-  const [data, setData] = useState(null);
   const [id, setId] = useState("");
   const socket = useMemo(() => {
     return io(process.env.REACT_APP_URL_SERVER);
@@ -19,9 +19,6 @@ const Home = () => {
     socket.on("connect", () => {
       console.log(socket.id);
       setId(socket.id);
-      socket.on(`result`, (payload) => {
-        setData(payload);
-      });
       socket.on(`textlog`, (payload) => {
         setTextlog((prev) => {
           return [...prev, payload];
@@ -51,33 +48,21 @@ const Home = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  useEffect(() => {
-    if (data?.product) {
-      setProduct((prev) => {
-        return [...prev, data.product];
-      });
-    }
-    if (data?.textlog) {
-      setTextlog((prev) => {
-        return [...prev, data.textlog];
-      });
-    }
-    if (data?.image) {
-      setImage(data.image);
-    }
-    if (data?.success) {
-      setSuccess((prev) => prev + 1);
-    }
-    if (data?.error) {
-      setError((prev) => prev + 1);
-    }
-  }, [data]);
+  
   const handleCrawl = () => {
     fetch(process.env.REACT_APP_URL_SERVER + "/worker", {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: id }),
-    }).then(() => console.log("OK"));
+    }).then((rs) => {
+      return rs.json();
+    })
+    .then((rs) => {
+      console.log(rs)
+      if(!rs.success) {
+        toast.error(rs.mes)
+      }
+    });
     socket.emit("active");
   };
   

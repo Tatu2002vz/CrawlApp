@@ -1,9 +1,9 @@
 const browserObject = require("./browser");
-const scraperController = require("./pageController");
+const {scrapeAll} = require("./pageController");
 const scrape = async ({id, workerId}) => {
   try {
     let browserInstance = browserObject.startBrowser();
-    scraperController(browserInstance, id, workerId);
+    scrapeAll(browserInstance, id, workerId);
   } catch (e) {
     console.log('Lỗi scraper: ' + e.message);
   }
