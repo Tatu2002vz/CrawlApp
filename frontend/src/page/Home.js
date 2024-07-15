@@ -117,15 +117,13 @@ const Home = () => {
       </header>
       <main className="p-9">
         <div className="flex gap-10">
-          <div className="w-full border border-slate-400 rounded-md h-96 overflow-y-auto">
-            <div className="flex flex-col-reverse">
-              {textlog
-                .slice()
-                .reverse()
-                .map((item, index) => {
-                  return <p key={index}>{item}</p>;
-                })}
-            </div>
+          <div className="w-full border border-slate-400 rounded-md h-96 overflow-y-auto flex flex-col-reverse">
+            {textlog
+              .slice()
+              .reverse()
+              .map((item, index) => {
+                return <p key={index}>{item}</p>;
+              })}
           </div>
           <div className="w-full border border-slate-400 rounded-md h-96 overflow-y-auto">
             {image && (

@@ -46,11 +46,13 @@ const receiveMsg = async (nameQueue, io) => {
           // await worker.update();
           await Worker.findByIdAndUpdate(workerId, {imageReview: imageRV});
         } else {
-          throw new Error("Couldn't find worker id");
+          console.log("Couldn't find worker id");
         }
       }
       if (type === "speed") {
         const worker = await Worker.findById(workerId);
+        console.log('success: ' +worker.sucess)
+        console.log('data: ' +data)
         if (worker) {
           worker.speed = (worker.sucess / +data) * 60;
         }

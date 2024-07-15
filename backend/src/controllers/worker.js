@@ -75,12 +75,21 @@ const stopWorker = async (req, res) => {
       return res.status(200).json({ sucess: false, mes: "Bot đã dừng!" });
     }
     const channel = getChannel();
-    const nameQueue = "scraper";
-    await channel.assertQueue(nameQueue, {
-      durable: false, // khi restart thì sẽ mất / không mất msg
-    });
-    await channel.sendToQueue(
-      nameQueue,
+
+    // await channel.sendToQueue(
+    //   nameQueue,
+    //   Buffer.from(
+    //     JSON.stringify({
+    //       id,
+    //       workerId,
+    //       type: "stop",
+    //       browser: worker.browser,
+    //     })
+    //   )
+    // );
+    await channel.publish(
+      "stop",
+      "",
       Buffer.from(
         JSON.stringify({
           id,
@@ -90,7 +99,6 @@ const stopWorker = async (req, res) => {
         })
       )
     );
-
     return res.status(200).json({ success: true, mes: "Success" });
   } catch (error) {
     console.log("Lỗi ở controller stop bot: " + error.message);

@@ -176,45 +176,47 @@ async function stopCrawl({ browser, id, workerId }) {
   //   browser.close();
   // }
 
-  let channel = getChannel()
-  let nameQueue = 'message'
+  let channel = getChannel();
+  let nameQueue = "message";
   let timeEnd = new Date().getTime();
   const closeCrawler = browsers.find((item) => item.id === browser);
-  const time = (timeEnd - +closeCrawler?.timeStart) / 1000;
-  await channel.sendToQueue(
-    nameQueue,
-    Buffer.from(
-      JSON.stringify({
-        id: id,
-        workerId: workerId,
-        type: "active",
-        data: false,
-      })
-    )
-  );
-  await channel.sendToQueue(
-    nameQueue,
-    Buffer.from(
-      JSON.stringify({
-        id: id,
-        workerId: workerId,
-        type: "speed",
-        data: time,
-      })
-    )
-  );
-  await channel.sendToQueue(
-    nameQueue,
-    Buffer.from(
-      JSON.stringify({
-        id: id,
-        workerId: workerId,
-        type: "stop",
-        data: 'Dừng chương trình!',
-      })
-    )
-  );
-  await closeCrawler?.browser.close();
+  if (closeCrawler) {
+    const time = (timeEnd - +closeCrawler?.timeStart) / 1000;
+    await channel.sendToQueue(
+      nameQueue,
+      Buffer.from(
+        JSON.stringify({
+          id: id,
+          workerId: workerId,
+          type: "active",
+          data: false,
+        })
+      )
+    );
+    await channel.sendToQueue(
+      nameQueue,
+      Buffer.from(
+        JSON.stringify({
+          id: id,
+          workerId: workerId,
+          type: "speed",
+          data: time,
+        })
+      )
+    );
+    await channel.sendToQueue(
+      nameQueue,
+      Buffer.from(
+        JSON.stringify({
+          id: id,
+          workerId: workerId,
+          type: "stop",
+          data: "Dừng chương trình!",
+        })
+      )
+    );
+    await closeCrawler?.browser.close();
+  }
 }
 module.exports = {
   scrapeAll,

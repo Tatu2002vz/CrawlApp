@@ -12,7 +12,10 @@ async function connect() {
     await channel.assertQueue(nameQueue, {
       durable: false, // khi restart thì sẽ mất / không mất msg
     });
-
+    const nameExchange = 'stop'
+    await channel.assertExchange(nameExchange, 'fanout', {
+      durable: false, 
+    })
     console.log("Connected to RabbitMQ");
   } catch (error) {
     console.error("Error connecting to RabbitMQ:", error);
