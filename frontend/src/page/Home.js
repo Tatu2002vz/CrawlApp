@@ -1,5 +1,5 @@
 import { io } from "socket.io-client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import parse from "html-react-parser";
 import { NavLink } from "react-router-dom";
 import formatTime from "../utils/formatTime";
@@ -11,6 +11,7 @@ const Home = () => {
   const [success, setSuccess] = useState(0);
   const [error, setError] = useState(0);
   const [id, setId] = useState("");
+  const workerId = useRef("");
   const socket = useMemo(() => {
     return io(process.env.REACT_APP_URL_SERVER);
   }, []);
@@ -30,7 +31,6 @@ const Home = () => {
         });
       });
       socket.on(`image`, (payload) => {
-        console.log(payload);
         setImage(payload);
       });
       socket.on(`success`, (payload) => {
@@ -42,30 +42,46 @@ const Home = () => {
           return [...prev, payload];
         });
       });
+      socket.on(`stop`, (payload) => {
+        toast.info("Đã dừng chương trình!!!");
+      });
     });
     return () => {
       socket.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
+
   const handleCrawl = () => {
     fetch(process.env.REACT_APP_URL_SERVER + "/worker", {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: id }),
-    }).then((rs) => {
-      return rs.json();
     })
-    .then((rs) => {
-      console.log(rs)
-      if(!rs.success) {
-        toast.error(rs.mes)
-      }
-    });
+      .then((rs) => {
+        return rs.json();
+      })
+      .then((rs) => {
+        if (!rs.success) {
+          toast.error(rs.mes);
+        } else {
+          workerId.current = rs.mes._id;
+        }
+      });
     socket.emit("active");
   };
-  
+  const handleStop = () => {
+    fetch(process.env.REACT_APP_URL_SERVER + "/worker/stop", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ workerId: workerId.current, id }),
+    })
+      .then((rs) => rs.json())
+      .then((rs) => {
+        if (!rs.success) toast.info(rs.mes);
+      });
+  };
+
   return (
     <div className="App">
       <header className="flex justify-around py-2 px-10 border-b border-b-gray-400">
@@ -76,7 +92,12 @@ const Home = () => {
           >
             Start
           </button>
-          
+          <button
+            className="mx-4 px-4 py-2 border rounded-md hover:text-white hover:bg-red-500"
+            onClick={() => handleStop()}
+          >
+            Stop
+          </button>
         </div>
         <div className="flex justify-between basis-1/3">
           <div className="text-center">
@@ -96,13 +117,15 @@ const Home = () => {
       </header>
       <main className="p-9">
         <div className="flex gap-10">
-          <div className="w-full border border-slate-400 rounded-md h-96 overflow-y-auto flex flex-col-reverse">
-            {textlog
-              .slice()
-              .reverse()
-              .map((item, index) => {
-                return <p key={index}>{item}</p>;
-              })}
+          <div className="w-full border border-slate-400 rounded-md h-96 overflow-y-auto">
+            <div className="flex flex-col-reverse">
+              {textlog
+                .slice()
+                .reverse()
+                .map((item, index) => {
+                  return <p key={index}>{item}</p>;
+                })}
+            </div>
           </div>
           <div className="w-full border border-slate-400 rounded-md h-96 overflow-y-auto">
             {image && (

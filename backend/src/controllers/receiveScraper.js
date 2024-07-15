@@ -2,7 +2,6 @@ var amqp = require("amqplib");
 const scrape = require("../../scraper/index");
 const { getChannel, connect } = require("../../config/rabbitmq");
 const {stopCrawl} = require('../../scraper/pageController')
-let browsers = [];
 const receiveScraper = async () => {
   //   const connMQ = await amqp.connect("amqp://localhost");
   await connect();
@@ -18,7 +17,7 @@ const receiveScraper = async () => {
       const { id, workerId, type, browser } = JSON.parse(msg.content.toString());
       if(type === 'stop') {
         console.log('stop crawl')
-        await stopCrawl(browser);
+        await stopCrawl({browser, id, workerId});
       } else 
       await scrape({ id, workerId });
     },
@@ -28,4 +27,3 @@ const receiveScraper = async () => {
   );
 };
 receiveScraper();
-module.exports = browsers;

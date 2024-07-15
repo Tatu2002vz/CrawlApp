@@ -56,7 +56,7 @@ const ManageBot = () => {
                 ) : (
                   <span className="text-red-500 mr-1">Stopped</span>
                 )}{" "}
-                - {item.speed ? +item.speed.toFixed(2) : 0} <span>products/ minute</span>
+                - {item.speed ? +item.speed.toFixed(1) : '--'} <span>products/ minute</span>
               </div>
               <div className="border-l border-l-gray-500 px-2 overflow-y-auto col-span-1">
                 {item.sucess}

@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 
-async function startBrowser(){
+async function startBrowser(id){
     let browser;
     try {
         console.log("Opening the browser......");
@@ -8,8 +8,7 @@ async function startBrowser(){
             headless: 'shell',
             args: ["--disable-setuid-sandbox", "--no-sandbox"],
             'ignoreHTTPSErrors': true,
-            "slowMo": 50,
-            // executablePath: '/usr/bin/chromium-browser'
+            executablePath: '/usr/bin/chromium-browser'
         });
         
     } catch (err) {

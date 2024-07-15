@@ -2,33 +2,21 @@
 const pageScraper = require("./pageScraper");
 var amqp = require("amqplib");
 const { getChannel } = require("../config/rabbitmq");
-const browsers = require("../src/controllers/receiveScraper");
-
 const { v4: uuidv4 } = require("uuid");
-let browser;
+
+let browsers = [];
 async function scrapeAll(browserInstance, id, workerId) {
+  let timeStart = new Date().getTime();
   const url = "https://chiaki.vn/";
   try {
     const channel = await getChannel();
     const nameQueue = "message";
     console.log("id: " + id);
     console.log("worker: " + workerId);
-    browser = await browserInstance;
-
-    await channel.sendToQueue(
-      nameQueue,
-      Buffer.from(
-        JSON.stringify({
-          id: id,
-          workerId: workerId,
-          type: "BBCXS",
-          data: `Chụp ảnh màn hình trang ${url}`,
-        })
-      )
-    );
+    let browser = await browserInstance;
 
     const browserId = uuidv4();
-    Array.from(browsers).push({ id: browserId, browser: browser });
+    browsers.push({ id: browserId, browser: browser, timeStart });
     await channel.sendToQueue(
       nameQueue,
       Buffer.from(
@@ -40,54 +28,67 @@ async function scrapeAll(browserInstance, id, workerId) {
         })
       )
     );
-    await channel.sendToQueue(
-      nameQueue,
-      Buffer.from(
-        JSON.stringify({
-          id: id,
-          workerId: workerId,
-          type: "active",
-          data: true,
-        })
-      )
-    );
-    let count = 0;
-    let countTimer = setInterval(() => {
-      count++;
-      if (count >= 60) {
-        clearInterval(countTimer);
-      }
-    }, 1000);
-    let returnTimer = setInterval(async () => {
-      await channel.sendToQueue(
-        nameQueue,
-        Buffer.from(
-          JSON.stringify({
-            id: id,
-            workerId: workerId,
-            type: "speed",
-            data: count,
-          })
-        )
-      );
-      if (count >= 60) {
-        clearInterval(returnTimer);
-      }
-    }, 5000);
-    setTimeout(async () => {
-      await channel.sendToQueue(
-        nameQueue,
-        Buffer.from(
-          JSON.stringify({
-            id: id,
-            workerId: workerId,
-            type: "active",
-            data: false,
-          })
-        )
-      );
-      await browser.close();
-    }, 60000);
+    // await channel.sendToQueue(
+    //   nameQueue,
+    //   Buffer.from(
+    //     JSON.stringify({
+    //       id: id,
+    //       workerId: workerId,
+    //       type: "active",
+    //       data: true,
+    //     })
+    //   )
+    // );
+    // let count = 0;
+    // let countTimer = setInterval(() => {
+    //   count++;
+    //   if (count >= 60) {
+    //     clearInterval(countTimer);
+    //   }
+    // }, 1000);
+    // let returnTimer = setInterval(async () => {
+    //   await channel.sendToQueue(
+    //     nameQueue,
+    //     Buffer.from(
+    //       JSON.stringify({
+    //         id: id,
+    //         workerId: workerId,
+    //         type: "speed",
+    //         data: count,
+    //       })
+    //     )
+    //   );
+    //   if (count >= 60) {
+    //     clearInterval(returnTimer);
+    //   }
+    // }, 5000);
+    // setTimeout(async () => {
+    //   await channel.sendToQueue(
+    //     nameQueue,
+    //     Buffer.from(
+    //       JSON.stringify({
+    //         id: id,
+    //         workerId: workerId,
+    //         type: "active",
+    //         data: false,
+    //       })
+    //     )
+    //   );
+    //   await channel.sendToQueue(
+    //     nameQueue,
+    //     Buffer.from(
+    //       JSON.stringify({
+    //         id: id,
+    //         workerId: workerId,
+    //         type: "textlog",
+    //         data: "Hết 5 phút. Dừng chương trình!",
+    //       })
+    //     )
+    //   );
+    // }, 120000);
+    // setTimeout(async() => {
+    //   process.exit();
+    // }, 121000);
     // -----------
     const categories = await pageScraper.scrapCategory(
       browser,
@@ -100,54 +101,6 @@ async function scrapeAll(browserInstance, id, workerId) {
     categories.pop();
     let products = [];
     //------------------------------
-    // try {
-    //   const conn = await amqp.connect("amqp://localhost");
-    //   const channel = await conn.createChannel();
-    //   // create exchange
-    //   const nameExchange = "product";
-    //   await channel.assertExchange(nameExchange, "fanout", {
-    //     durable: false,
-    //   });
-    //   const { queue } = await channel.assertQueue("", {
-    //     exclusive: true, // tự động xóa khi close connect
-    //   });
-    //   console.log(`namequeue: ${queue}`);
-    //   // 5.
-    //   await channel.bindQueue(queue, nameExchange, "");
-    //   await channel.consume(
-    //     queue,
-    //     async (msg) => {
-    //       const link = msg.content.toString();
-    //       console.log(`msg: ${msg.content.toString()}`);
-    //       const detailProducts = await pageScraper.scapeDetailProduct(
-    //         browser,
-    //         link,
-    //         socket
-    //       );
-    //     },
-    //     {
-    //       noAck: true,
-    //     }
-    //   );
-    //   // 4. publish video
-    //   await channel.publish(
-    //     nameExchange,
-    //     "",
-    //     Buffer.from(
-    //       "https://chiaki.vn/collagen-mang-cut-dau-biec-zenpali-hop-30-goi"
-    //     )
-    //   );
-    //   console.log(
-    //     `[x] Send Ok:::https://chiaki.vn/collagen-mang-cut-dau-biec-zenpali-hop-30-goi`
-    //   );
-    //   // setTimeout(function() {
-    //   //     conn.close()
-    //   //     process.exit(0);
-    //   // }, 2000)
-
-    // } catch (error) {
-    //   console.log(error);
-    // }
 
     // --------------------
     for (let category of categories) {
@@ -185,16 +138,21 @@ async function scrapeAll(browserInstance, id, workerId) {
                   workerId
                 );
                 products.push(detailProduct);
-              } catch (error) {}
+              } catch (error) {
+                console.log("Lỗi ở lấy chi tiết sp: " + error.message);
+                if (error.message.includes("Connection closed")) break;
+              }
             }
           } catch (error) {
-            console.log(error);
-            continue;
+            console.log(
+              "Lỗi xảy ra khi lấy sản phẩm trên 1 trang: " + error.message
+            );
+            if (error.message.includes("Connection closed")) break;
           }
         }
       } catch (error) {
-        console.log(`Có lỗi xảy ra: ${error}`);
-        continue;
+        console.log(`Có lỗi xảy ra khi lấy số trang: ${error.message}`);
+        if (error.message.includes("Connection closed")) break;
       }
     }
     await channel.sendToQueue(
@@ -210,17 +168,53 @@ async function scrapeAll(browserInstance, id, workerId) {
     );
     // console.log(products);
   } catch (err) {
-    console.log("Có lỗi xảy ra ở page controller: ", err);
+    console.log("Có lỗi xảy ra ở page controller: ", err.message);
   }
 }
-async function stopCrawl(id) {
+async function stopCrawl({ browser, id, workerId }) {
   // if (browsers.) {
   //   browser.close();
   // }
-  
-  console.log('browsers: ' + Array.from(browsers))
-  const closeCrawler = Array.from(browsers).find((item) => item.id === id);
-  closeCrawler?.close();
+
+  let channel = getChannel()
+  let nameQueue = 'message'
+  let timeEnd = new Date().getTime();
+  const closeCrawler = browsers.find((item) => item.id === browser);
+  const time = (timeEnd - +closeCrawler?.timeStart) / 1000;
+  await channel.sendToQueue(
+    nameQueue,
+    Buffer.from(
+      JSON.stringify({
+        id: id,
+        workerId: workerId,
+        type: "active",
+        data: false,
+      })
+    )
+  );
+  await channel.sendToQueue(
+    nameQueue,
+    Buffer.from(
+      JSON.stringify({
+        id: id,
+        workerId: workerId,
+        type: "speed",
+        data: time,
+      })
+    )
+  );
+  await channel.sendToQueue(
+    nameQueue,
+    Buffer.from(
+      JSON.stringify({
+        id: id,
+        workerId: workerId,
+        type: "stop",
+        data: 'Dừng chương trình!',
+      })
+    )
+  );
+  await closeCrawler?.browser.close();
 }
 module.exports = {
   scrapeAll,

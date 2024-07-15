@@ -62,6 +62,9 @@ const receiveMsg = async (nameQueue, io) => {
       if(type === 'browser') {
         await Worker.findByIdAndUpdate(workerId, {browser: data})
       }
+      if(type === 'stop') {
+        io.to(id).emit("stop", data);
+      }
     },
     {
       noAck: true,

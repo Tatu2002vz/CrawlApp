@@ -4,8 +4,6 @@ const scraperObject = {
   scrapCategory: (browser, url, channel, nameQueue, id, workerId) =>
     new Promise(async (resolve, reject) => {
       try {
-
-
         let page = await browser.newPage();
         await page.setViewport({ width: 1500, height: 1500 });
         await channel.sendToQueue(
@@ -104,11 +102,9 @@ const scraperObject = {
             });
           }
         );
-        await page.close();
+        // await page.close();
         resolve(category);
       } catch (error) {
-        console.log(error.message);
-        console.log(nameQueue);
         await channel.sendToQueue(
           nameQueue,
           Buffer.from(
@@ -120,7 +116,7 @@ const scraperObject = {
             })
           )
         );
-        reject(error.message);
+        reject(error);
       }
     }),
   scapePageNumber: (browser, url, channel, nameQueue, id, workerId) =>
@@ -206,7 +202,6 @@ const scraperObject = {
         await page.close();
         resolve(numberPage);
       } catch (error) {
-        console.log(error.message);
         await channel.sendToQueue(
           nameQueue,
           Buffer.from(
@@ -308,7 +303,6 @@ const scraperObject = {
         await page.close();
         resolve(product);
       } catch (error) {
-        console.log(error.message);
         await channel.sendToQueue(
           nameQueue,
           Buffer.from(
